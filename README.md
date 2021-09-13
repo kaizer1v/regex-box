@@ -1,6 +1,6 @@
 # Chrome Regex Search
 
-![Logo](icons/icons_96.png)
+![Logo](src/icons/icons_96.png)
 
 An enhanced search box for chrome that allows searching patterns using regular expressions.
 
