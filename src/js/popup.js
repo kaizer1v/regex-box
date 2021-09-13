@@ -27,123 +27,47 @@ let btn_next = document.getElementById('next');
 let btn_prev = document.getElementById('prev');
 let btn_flag = document.getElementById('insensitive');
 
+
 /**
- * will maintain most recent maxlen items
+ * Initialisation - run when the extension is opened
  */
-class RegExHistory {
-  constructor(maxlen=maxHistoryLength) {
-    this.maxlen = maxlen
-    this.history = []
-    this.i = 0
-    chrome.storage.local.set({
-      // 'instantResults': DEFAULT_INSTANT_RESULTS,
-      // 'maxHistoryLength': MAX_HISTORY_LENGTH,
-      'searchHistory': [],
-      // 'isSearchHistoryVisible': false,
-    })
-  }
-
-  is_empty() {
-    return this.history.length === 0
-  }
-
-  clear() {
-    this.history = []
-    this.i = 0
-    return this
-  }
-
-  next() {
-    if(this.i >= this.history.length)
-      return false
-    return this.history[this.i++]
-  }
-
-  prev() {
-    if(this.i <= 0)
-      return false
-    return this.history[this.i--]
-  }
-
-  add(item) {
-    if(this.history.length >= this.maxlen) {
-      this.history.pop()
+/* Received returnSearchInfo message, populate popup UI */
+chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
+  console.log('opennnnn');
+  console.log(request.message);
+  debugger;
+  if(request.message == 'returnSearchInfo') {
+    processingKey = false;
+    // update the results `0 of 0` text
+    if(request.numResults > 0) {
+      num_results.textContent = String(request.currentSelection+1) + ' of ' + String(request.numResults);
+    } else {
+      num_results.textContent = String(request.currentSelection) + ' of ' + String(request.numResults);
     }
-    this.history.unshift(item)
-    return this
+    if(!sentInput) {
+      txt_regex.value = request.regexString;
+    }
+    if(request.numResults > 0 && request.cause == 'selectNode') {
+      addToHistory(request.regexString);
+    }
+    if(request.regexString !== txt_regex.value) {
+      passInputToContentScript();
+    }
   }
-}
+});
 
-class RE {
-  constructor(txt, settings={
-    flag_case_sensitivity: true,
-    default_instant_results: true,
-    current_window: true
-  }) {
-    this.txt = txt
-    this.regex = (this.is_valid(txt)) ? new RegExp(txt) : new RegExp()
-    this.settings = settings
-  }
-
-  is_valid(txt) {
-    if(new RegExp(txt))
-      return true
-    return false
-  }
-
-  copy_results() {
-    chrome.tabs.query({
-      'active': true,
-      'currentWindow': true
-    },
-    function (tabs) {
-      if ('undefined' != typeof tabs[0].id && tabs[0].id) {
-        chrome.tabs.sendMessage(tabs[0].id, {
-          'message': 'copyToClipboard'
-        });
-      }
-    });
-
-    return this
-  }
-
-  next_result() {
-    chrome.tabs.query({
-      'active': true,
-      'currentWindow': true
-    },
-    function(tabs) {
-      if('undefined' != typeof tabs[0].id && tabs[0].id) {
-        chrome.tabs.sendMessage(tabs[0].id, {
-          'message' : 'selectNextNode'
-        })
-      }
-    })
-
-    return this
-  }
-
-  prev_result() {
-    chrome.tabs.query({
-      'active': true,
-      'currentWindow': true
-    },
-    function(tabs) {
-      if ('undefined' != typeof tabs[0].id && tabs[0].id) {
-        chrome.tabs.sendMessage(tabs[0].id, {
-          'message' : 'selectPrevNode'
-        })
-      }
-    })
-
-    return this
-  }
-}
+// chrome.runtime.onMessage.addListener(
+//   function(request, sender, sendResponse) {
+//     console.log(sender.tab ? "from a content script:" + sender.tab.url : "from the extension");
+//     if(request.greeting === "hello")
+//       sendResponse({farewell: "goodbye"});
+//   }
+// );
 
 /*** FUNCTIONS ***/
 /* Validate that a given pattern string is a valid regex */
 function isValidRegex(pattern) {
-  try{
+  try {
     var regex = new RegExp(pattern);
     return true;
   } catch(e) {
@@ -152,7 +76,8 @@ function isValidRegex(pattern) {
 }
 
 /* Send message to content script of tab to select next result */
-function selectNext(){
+function selectNext() {
+  console.log('next');
   chrome.tabs.query({
     'active': true,
     'currentWindow': true
@@ -167,7 +92,8 @@ function selectNext(){
 }
 
 /* Send message to content script of tab to select previous result */
-function selectPrev(){
+function selectPrev() {
+  console.log('prev');
   chrome.tabs.query({
     'active': true,
     'currentWindow': true
@@ -180,11 +106,6 @@ function selectPrev(){
     }
   });
 }
-
-/* Send message to pass input string to content script of tab to find and highlight regex matches */
-// function passInputToContentScript(){
-//   passInputToContentScript(false);
-// }
 
 function passInputToContentScript(configurationChanged) {
   if(!processingKey) {
@@ -361,26 +282,6 @@ document.getElementById('copy-to-clipboard').addEventListener('click', function 
     });
 });
 
-/* Received returnSearchInfo message, populate popup UI */ 
-chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
-  if ('returnSearchInfo' == request.message) {
-    processingKey = false;
-    if (request.numResults > 0) {
-      num_results.textContent = String(request.currentSelection+1) + ' of ' + String(request.numResults);
-    } else {
-      num_results.textContent = String(request.currentSelection) + ' of ' + String(request.numResults);
-    }
-    if (!sentInput) {
-      txt_regex.value = request.regexString;
-    }
-    if (request.numResults > 0 && request.cause == 'selectNode') {
-      addToHistory(request.regexString);
-    }
-    if (request.regexString !== txt_regex.value) {
-      passInputToContentScript();
-    }
-  }
-});
 
 /* Key listener for selectNext and selectPrev
  * Thanks a lot to Cristy from StackOverflow for this AWESOME solution
