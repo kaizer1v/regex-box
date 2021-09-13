@@ -4,6 +4,13 @@
 
 An enhanced search box for chrome that allows searching patterns using regular expressions.
 
+## Installation
+
+1. Download or clone this repo
+2. Open this url (chrome://extensions) on chrome
+3. Turn on `Developer Mode`
+4. Click on `Load Unpacked`
+5. Browse to this repo's `src` folder and install
 
 ## Keyboard Shortcuts
 
