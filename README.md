@@ -7,14 +7,14 @@ An enhanced search box for chrome that allows searching patterns using regular e
 ## Installation
 
 1. Download or clone this repo
-2. Open this url (chrome://extensions) on chrome
+2. Open [this url](chrome://extensions) on chrome
 3. Turn on `Developer Mode`
 4. Click on `Load Unpacked`
 5. Browse to this repo's `src` folder and install
 
 ## Keyboard Shortcuts
 
-Go to chrome://extensions/shortcuts on chrome to set keyboard shortcuts
+Go to [keyboard shorcuts page](chrome://extensions/shortcuts) on chrome to set keyboard shortcuts
 
 - `cmd/ctrl + shift + f`: To initiate the plugin. You can also set this in your [chrome settings](chrome://extensions/shortcuts)
 - `enter`: select next regex match on page
