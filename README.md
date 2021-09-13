@@ -14,6 +14,8 @@ An enhanced search box for chrome that allows searching patterns using regular e
 
 ## Keyboard Shortcuts
 
+Go to chrome://extensions/shortcuts on chrome to set keyboard shortcuts
+
 - `cmd/ctrl + shift + f`: To initiate the plugin. You can also set this in your [chrome settings](chrome://extensions/shortcuts)
 - `enter`: select next regex match on page
 - `shift + enter`: select previous regex match on page
