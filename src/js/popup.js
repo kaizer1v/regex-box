@@ -1,28 +1,26 @@
 
 /*** CONSTANTS ***/
-let DEFAULT_INSTANT_RESULTS = true;
-let ERROR_COLOR = '#F8D7DA';
-let WHITE_COLOR = '#ffffff';
-let ERROR_TEXT = "Content script was not loaded on this url or please wait for the page to load.";
-let HISTORY_IS_EMPTY_TEXT = "Search history is empty.";
-let CLEAR_ALL_HISTORY_TEXT = "Clear History";
-let DEFAULT_CASE_INSENSITIVE = false;
-let MAX_HISTORY_LENGTH = 30;
-/*** CONSTANTS ***/
+const ERROR_COLOR = '#F8D7DA'
+const WHITE_COLOR = '#ffffff'
+const ERROR_TEXT = "Content script was not loaded on this url or please wait for the page to load."
+const HISTORY_IS_EMPTY_TEXT = "Search history is empty."
+const CLEAR_ALL_HISTORY_TEXT = "Clear History"
+const MAX_HISTORY_LENGTH = 30
 
 /*** VARIABLES ***/
+let DEFAULT_CASE_INSENSITIVE = false
+let DEFAULT_INSTANT_RESULTS = true
 let sentInput = false;          // ???
-// let processingKey = false;      // ???
 let searchHistory = null;
 let maxHistoryLength = MAX_HISTORY_LENGTH;
 /*** VARIABLES ***/
 
-/**ELEMENTS**/
-let txt_regex = document.getElementById('inputRegex');
-let num_results = document.getElementById('numResults');
-let btn_next = document.getElementById('next');
-let btn_prev = document.getElementById('prev');
-let btn_flag = document.getElementById('insensitive');
+/*** ELEMENTS ***/
+const txt_regex = document.getElementById('inputRegex');
+const num_results = document.getElementById('numResults');
+const btn_next = document.getElementById('next');
+const btn_prev = document.getElementById('prev');
+const btn_flag = document.getElementById('insensitive');
 
 
 /**
@@ -31,24 +29,18 @@ let btn_flag = document.getElementById('insensitive');
 /* Received returnSearchInfo message, populate popup UI */
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if(request.message == 'returnSearchInfo') {
-    // processingKey = false;
-
     // update the results `0 of 0` text
-    if(request.numResults > 0) {
-      num_results.textContent = String(request.currentSelection+1) + ' of ' + String(request.numResults);
-    } else {
-      num_results.textContent = String(request.currentSelection) + ' of ' + String(request.numResults);
-    }
-
+    let sel = (request.numResults > 0) ? request.currentSelection + 1 : request.currentSelection
+    num_results.textContent = `${sel} of ${request.numResults}`
 
     if(!sentInput) {
-      txt_regex.value = request.regexString;
+      txt_regex.value = request.regexString
     }
     if(request.numResults > 0 && request.cause == 'selectNode') {
       addToHistory(request.regexString);
     }
     if(request.regexString !== txt_regex.value) {
-      search();
+      search()
     }
   }
 });
@@ -57,14 +49,14 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
  * Input box keydown event listener
  */
 txt_regex.addEventListener('keydown', (e) => {
-  if(e.code == 'Enter' && e.code != 'Shift') {                // ENTER
+  if(e.key == 'Enter' && e.key != 'Shift') {                // ENTER
     next_prev(true)
-  } else if (e.code == 'Shift' && (e.code == 'Enter')) {      // SHIFT + ENTER
+  } else if (e.key == 'Shift' && (e.key == 'Enter')) {      // SHIFT + ENTER
     next_prev(false)
-  // } else if () {                                           // ESC key
-    // TODO: remove highlights from page + close box
+  } else if(e.key == 'Escape') {
+    // TODO: remove highlights from page
   } else {
-    search()                                                  // any char other than SHIFT or ENTER
+    search()                                                // any char other than SHIFT or ENTER
   }
 }, true)
 
