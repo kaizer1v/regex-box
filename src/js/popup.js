@@ -226,10 +226,21 @@ document.getElementById('clear').addEventListener('click', (e) => {
 });
 
 document.getElementById('show-history').addEventListener('click', (e) => {
-  let makeVisible = document.getElementById('history').style.display == 'none';
-  document.getElementById('history').style.display = makeVisible ? 'block' : 'none';
-  document.getElementById('show-history').className = (makeVisible) ? 'selected' : '';
-});
+  let makeVisible = document.getElementById('history').style.display == 'none'
+  document.getElementById('history').style.display = makeVisible ? 'block' : 'none'
+  document.getElementById('show-history').className = (makeVisible) ? 'selected' : ''
+
+  // var makeVisible = document.getElementById('history').style.display == 'none'
+  // document.getElementById('history').style.display = makeVisible ? 'block' : 'none'
+  // document.getElementById('show-history').className = (makeVisible) ? 'selected' : ''
+  // chrome.storage.local.set({ isSearchHistoryVisible: makeVisible })
+})
+
+document.getElementById('cheatsheet').addEventListener('click', (e) => {
+  let makeVisible = document.getElementById('cheatsheet_content').style.display == 'none'
+  document.getElementById('cheatsheet_content').style.display = makeVisible ? 'block' : 'none'
+  document.getElementById('cheatsheet').className = (makeVisible) ? 'selected' : ''
+})
 
 btn_flag.addEventListener('click', (e) => {
   let is_on = (e.target.dataset.on === 'true') ? true : false
@@ -293,13 +304,5 @@ chrome.tabs.query({
   }
 });
 
-/* Focus on input form */
+/* Focus on input */
 txt_regex.focus()
-txt_regex.select()
-// window.setTimeout(() => { txt_regex.select() }, 0)
-// Thanks to http://stackoverflow.com/questions/480735#comment40578284_14573552
-
-var makeVisible = document.getElementById('history').style.display == 'none'
-document.getElementById('history').style.display = makeVisible ? 'block' : 'none'
-document.getElementById('show-history').className = (makeVisible) ? 'selected' : ''
-chrome.storage.local.set({ isSearchHistoryVisible: makeVisible })
