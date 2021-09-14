@@ -1,3 +1,4 @@
+
 /*** CONSTANTS ***/
 let DEFAULT_INSTANT_RESULTS = true;
 let ERROR_COLOR = '#F8D7DA';
@@ -14,8 +15,8 @@ let MAX_HISTORY_LENGTH = 30;
 /*** CONSTANTS ***/
 
 /*** VARIABLES ***/
-let sentInput = false;
-let processingKey = false;
+let sentInput = false;          // ???
+// let processingKey = false;      // ???
 let searchHistory = null;
 let maxHistoryLength = MAX_HISTORY_LENGTH;
 /*** VARIABLES ***/
@@ -33,17 +34,17 @@ let btn_flag = document.getElementById('insensitive');
  */
 /* Received returnSearchInfo message, populate popup UI */
 chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
-  console.log('opennnnn');
-  console.log(request.message);
-  debugger;
   if(request.message == 'returnSearchInfo') {
-    processingKey = false;
+    // processingKey = false;
+
     // update the results `0 of 0` text
     if(request.numResults > 0) {
       num_results.textContent = String(request.currentSelection+1) + ' of ' + String(request.numResults);
     } else {
       num_results.textContent = String(request.currentSelection) + ' of ' + String(request.numResults);
     }
+
+
     if(!sentInput) {
       txt_regex.value = request.regexString;
     }
@@ -55,6 +56,73 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
     }
   }
 });
+
+/**
+ * Input box keydown event listener
+ */
+txt_regex.addEventListener('keydown', function(e) {
+  if(e.code == 'Enter' && e.code != 'Shift') {                // ENTER
+    next_prev(true)
+  } else if (e.code == 'Shift' && (e.code == 'Enter')) {      // SHIFT + ENTER
+    next_prev(false)
+  // } else if () {                                           // ESC key
+    // TODO: remove highlights from page + close box
+  } else {
+    passInputToContentScript()                         // any char other than SHIFT or ENTER
+  }
+}, true)
+
+
+/**
+ * Sets text box's state (error or normal) based on validity
+ */
+function setTxtBoxState(valid) {
+  txt_regex.style.backgroundColor = (!valid) ? ERROR_COLOR : WHITE_COLOR
+  return
+}
+
+/**
+ * Fire the query to search pattern on browser page
+ */
+function passInputToContentScript(configurationChanged=undefined) {
+  console.log('yo o yo');
+  // search query corrent + incorrect ones
+  chrome.tabs.query({ 'active': true, 'currentWindow': true },
+    function(tabs) {
+      if(typeof tabs[0].id != 'undefined') {
+        chrome.tabs.sendMessage(tabs[0].id, {
+          'message': 'search',
+          'regexString': txt_regex.value,
+          'configurationChanged': configurationChanged,
+          'getNext': true
+        });
+        sentInput = true
+      }
+      // chrome.storage.local.set({lastSearch: txt_regex.value});
+    });
+
+  setTxtBoxState(isValidRegex(txt_regex.value))   // set text box state (error or normal)
+}
+
+
+/* Key listener for selectNext and selectPrev
+ * Thanks a lot to Cristy from StackOverflow for this AWESOME solution
+ * http://stackoverflow.com/questions/5203407/javascript-multiple-keys-pressed-at-once */
+// var map = [];
+// onkeydown = onkeyup = function(e) {
+//     map[e.keyCode] = e.type == 'keydown';
+//     if(txt_regex === document.activeElement) { // if input element is in focus
+//       if(!map[16] && map[13]) { // ENTER
+//         if(sentInput) {
+//           selectNext();
+//         } else {
+//           passInputToContentScript();   // any char other than SHIFT or ENTER
+//         }
+//       } else if (map[16] && map[13]) { //SHIFT + ENTER
+//         selectPrev();
+//       }
+//     }
+// }
 
 // chrome.runtime.onMessage.addListener(
 //   function(request, sender, sendResponse) {
@@ -68,71 +136,63 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
 /* Validate that a given pattern string is a valid regex */
 function isValidRegex(pattern) {
   try {
-    var regex = new RegExp(pattern);
-    return true;
+    new RegExp(pattern)
+    return true
   } catch(e) {
-    return false;
+    console.error(e)
+    return false
   }
+}
+
+/**
+ * Select next or previous based on `true` or `false`
+ */
+let next_prev = (next=true) => {
+  let msg = (next) ? 'selectNextNode' : 'selectPrevNode'
+  chrome.tabs.query({
+    'active': true,
+    'currentWindow': true
+  },
+  function(tabs) {
+    if(typeof tabs[0].id != 'undefined') {
+      chrome.tabs.sendMessage(tabs[0].id, {
+        'message': msg
+      })
+    }
+  })
+  return true
 }
 
 /* Send message to content script of tab to select next result */
-function selectNext() {
-  console.log('next');
-  chrome.tabs.query({
-    'active': true,
-    'currentWindow': true
-  },
-  function(tabs) {
-    if ('undefined' != typeof tabs[0].id && tabs[0].id) {
-      chrome.tabs.sendMessage(tabs[0].id, {
-        'message' : 'selectNextNode'
-      });
-    }
-  });
-}
+// function selectNext() {
+//   chrome.tabs.query({
+//     'active': true,
+//     'currentWindow': true
+//   },
+//   function(tabs) {
+//     if (typeof tabs[0].id != 'undefined') {
+//       chrome.tabs.sendMessage(tabs[0].id, {
+//         'message': 'selectNextNode'
+//       });
+//     }
+//   });
+// }
 
 /* Send message to content script of tab to select previous result */
-function selectPrev() {
-  console.log('prev');
-  chrome.tabs.query({
-    'active': true,
-    'currentWindow': true
-  },
-  function(tabs) {
-    if ('undefined' != typeof tabs[0].id && tabs[0].id) {
-      chrome.tabs.sendMessage(tabs[0].id, {
-        'message' : 'selectPrevNode'
-      });
-    }
-  });
-}
+// function selectPrev() {
+//   chrome.tabs.query({
+//     'active': true,
+//     'currentWindow': true
+//   },
+//   function(tabs) {
+//     if(typeof tabs[0].id != 'undefined') {
+//       chrome.tabs.sendMessage(tabs[0].id, {
+//         'message': 'selectPrevNode'
+//       });
+//     }
+//   });
+// }
 
-function passInputToContentScript(configurationChanged) {
-  if(!processingKey) {
-    var regexString = txt_regex.value;
-    if(!isValidRegex(regexString)) {
-      txt_regex.style.backgroundColor = ERROR_COLOR;
-    } else {
-      txt_regex.style.backgroundColor = WHITE_COLOR;
-    }
-    chrome.tabs.query(
-      { 'active': true, 'currentWindow': true },
-      function(tabs) {
-        if('undefined' != typeof tabs[0].id && tabs[0].id) {
-          processingKey = true;
-          chrome.tabs.sendMessage(tabs[0].id, {
-            'message' : 'search',
-            'regexString' : regexString,
-            'configurationChanged' : configurationChanged,
-            'getNext' : true
-          });
-          sentInput = true;
-        }
-        chrome.storage.local.set({lastSearch: regexString});
-      }
-    );
-  }
-}
 
 function createHistoryLineElement(text) {
   var deleteEntrySpan = document.createElement('span');
@@ -244,11 +304,11 @@ function toggleCaseInsensitive() {
 
 /*** LISTENERS ***/
 btn_next.addEventListener('click', function() {
-  selectNext();
+  next_prev(true)
 });
 
 btn_prev.addEventListener('click', function() {
-  selectPrev();
+  next_prev(false)
 });
 
 document.getElementById('clear').addEventListener('click', function() {
@@ -282,25 +342,6 @@ document.getElementById('copy-to-clipboard').addEventListener('click', function 
     });
 });
 
-
-/* Key listener for selectNext and selectPrev
- * Thanks a lot to Cristy from StackOverflow for this AWESOME solution
- * http://stackoverflow.com/questions/5203407/javascript-multiple-keys-pressed-at-once */
-var map = [];
-onkeydown = onkeyup = function(e) {
-    map[e.keyCode] = e.type == 'keydown';
-    if (txt_regex === document.activeElement) { //input element is in focus
-      if (!map[16] && map[13]) { //ENTER
-        if (sentInput) {
-          selectNext();
-        } else {
-          passInputToContentScript();
-        }
-      } else if (map[16] && map[13]) { //SHIFT + ENTER
-        selectPrev();
-      }
-    }
-}
 /*** LISTENERS ***/
 
 /*** INIT ***/
