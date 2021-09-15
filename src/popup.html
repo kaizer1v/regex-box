@@ -4,126 +4,18 @@
     <title>Chrome Regex Search</title>
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" />
-    <style type="text/css">
-      body {
-        background-color: #fff;
-        border-radius: 5px;
-      }
-
-      a:link, a:visited {
-        display: block;
-        width: 2em;  
-        padding: 10px 5px;
-        color: #000;
-        text-align: center;
-        transition: color .15s ease-in-out,background-color .15s ease-in-out,border-color .15s ease-in-out,box-shadow .15s ease-in-out;
-      }
-
-      a:hover, a.selected {
-        background-color: #eaeaea;
-        color: #007BFF;
-        border-radius: 3px;
-      }
-
-      .flexContainer {
-        position: relative;
-        text-align: right;
-        display: flex;
-      }
-
-      #inputRegex {
-        font-family: monospace;
-        font-size: 1rem;
-        padding: 10px;
-        width: 22em;
-        border-radius: 2px;
-        padding-right: 5em;
-        -webkit-box-shadow: 0 1px 1px rgba(0, 0, 0, .125);
-        box-shadow: 0 1px 1px rgba(0, 0, 0, .125);
-      }
-
-      #numResults {
-        color: #818182;
-        font-family: monospace;
-        position: absolute;
-        top: 1em;
-        right: 19em;
-        min-width: 4em;
-        max-width: 6em;
-        overflow:auto;
-        white-space: nowrap;
-        font-size: 10pt;
-      }
-
-      #cheatsheet_content {
-        overflow: scroll;
-        display: none;
-      }
-
-      #flag_options { display: none; }
-      #flag_options ul {
-        list-style: none;
-      }
-
-      #history {
-        display: none;
-        font-size: 1rem;
-        list-style: none;
-      }
-        #history li {
-          padding: 5px;
-          margin-left: -30px;
-          font-family: monospace;
-        }
-        #history li:hover { background: #eee; }
-
-      .historyDeleteEntry {
-        color: #721C24;
-        cursor: pointer;
-        margin-right: 5px;
-        font-size: 1rem;
-        float: right;
-      }
-      .historyLink {
-        color: #0C5460;
-        cursor: pointer;
-        line-height: 1rem;
-      }
-      .historyIsEmptyMessage {
-        font-style: italic;
-        color: #555;
-        margin-left: -35px;
-      }
-      
-      .clearHistoryButton {
-        width:  7rem !important;
-        text-decoration: none;
-        display: inline-block;
-        float: right;
-        margin: 10px;
-        color: #212529;
-        text-align: left;
-        vertical-align: middle;
-        cursor: pointer;
-        user-select: none;
-        background-color: transparent;
-        border: 1px solid transparent;
-        padding: .375rem .75rem;
-        font-size: 1rem;
-        border-radius: .25rem;
-      }
-
-      .error-chrome-regex {
-        color: #721C24;
-        display: block;
-        margin: 10px 5px;
-      }
-
-    </style>
+    <link rel="stylesheet" href="css/popup.css" />
   </head>
   <body>
     <div class="flexContainer">
-      <input id="inputRegex" type="text" name="inputRegex"></input><span id="numResults">0 of 0</span>
+      <!-- <input id="inputRegex" type="text" name="inputRegex"></input><span id="numResults">0 of 0</span> -->
+
+      <div id="regex_box">
+        <span id="pre_input" class="pre_post">/</span>
+        <span id="inputRegex" contenteditable="true">\w+</span>
+        <span id="post_input" class="pre_post">/</span>
+      </div>
+
       <a href="#" id="prev" type="button" title="Previous Match"><i class="fas fa-chevron-up"></i></a>
       <a href="#" id="next" type="button" title="Next Match"><i class="fas fa-chevron-down"></i></a>
       <!-- <a href="#" id="insensitive" type="button" title="Case Insensitive"><i class="far fa-flag"></i></a> -->

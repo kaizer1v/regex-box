@@ -18,10 +18,6 @@ let maxHistoryLength = MAX_HISTORY_LENGTH;
 /*** ELEMENTS ***/
 const txt_regex = document.getElementById('inputRegex');
 const num_results = document.getElementById('numResults');
-const btn_next = document.getElementById('next');
-const btn_prev = document.getElementById('prev');
-const btn_flag = document.getElementById('insensitive');
-
 
 /**
  * Initialisation - run when the extension is opened
@@ -211,11 +207,11 @@ let clearSearchHistory = () => {
 
 
 /*** LISTENERS ***/
-btn_next.addEventListener('click', (e) => {
+document.getElementById('next').addEventListener('click', (e) => {
   next_prev(true)
 })
 
-btn_prev.addEventListener('click', (e) => {
+document.getElementById('prev').addEventListener('click', (e) => {
   next_prev(false)
 })
 
@@ -232,11 +228,6 @@ document.getElementById('show-history').addEventListener('click', (e) => {
   let makeVisible = document.getElementById('history').style.display == 'none'
   document.getElementById('history').style.display = makeVisible ? 'block' : 'none'
   document.getElementById('show-history').className = (makeVisible) ? 'selected' : ''
-
-  // var makeVisible = document.getElementById('history').style.display == 'none'
-  // document.getElementById('history').style.display = makeVisible ? 'block' : 'none'
-  // document.getElementById('show-history').className = (makeVisible) ? 'selected' : ''
-  // chrome.storage.local.set({ isSearchHistoryVisible: makeVisible })
 })
 
 document.getElementById('cheatsheet').addEventListener('click', (e) => {
@@ -251,7 +242,7 @@ document.getElementById('flags').addEventListener('click', (e) => {
   document.getElementById('flags').className = (makeVisible) ? 'selected' : ''
 })
 
-btn_flag.addEventListener('click', (e) => {
+document.getElementById('insensitive').addEventListener('click', (e) => {
   let is_on = (e.target.dataset.on === 'true') ? true : false
   e.target.setAttribute('data-on', !is_on)
   e.target.className = (is_on) ? 'selected' : ''
