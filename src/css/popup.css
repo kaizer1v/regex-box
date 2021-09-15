@@ -4,17 +4,22 @@ body {
 }
 
 #regex_box {
-  border: 1px solid #999;
+  border: 2px solid #007BFF;
   padding: 5px;
-  width: auto;
-  position: relative;
+  width: 300px;
+  flex-direction: columns;
+  display: flex;
 }
-#regex_box .pre_post {
-  width: auto;
-  outline: 0;
-  color: grey;
-}
-#regex_box #pre_input { position: absolute; left: 0; }
+  #regex_box .pre_post {
+    outline: 0;
+    color: #818182;
+  }
+  #regex_box #inputRegex {
+    font-family: monospace;
+    font-size: 1rem;
+    padding: 0 5px;
+    outline: 0px solid transparent;
+  }
 
 a:link, a:visited {
   display: block;
@@ -35,17 +40,6 @@ a:hover, a.selected {
   position: relative;
   text-align: right;
   display: flex;
-}
-
-#inputRegex {
-  font-family: monospace;
-  font-size: 1rem;
-  padding: 10px;
-  width: 22em;
-  border-radius: 2px;
-  padding-right: 5em;
-  -webkit-box-shadow: 0 1px 1px rgba(0, 0, 0, .125);
-  box-shadow: 0 1px 1px rgba(0, 0, 0, .125);
 }
 
 #numResults {
