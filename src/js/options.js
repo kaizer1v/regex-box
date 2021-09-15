@@ -1,20 +1,20 @@
 /*** CONSTANTS ***/
-var DEFAULT_MAX_RESULTS = 500;
-var DEFAULT_HIGHLIGHT_COLOR = '#ffff00';
-var DEFAULT_SELECTED_COLOR = '#ff9900';
-var DEFAULT_TEXT_COLOR = '#000000';
-var DEFAULT_MAX_HISTORY_LENGTH = 30;
-var WHITE_COLOR = '#ffffff';
-var ERROR_COLOR = '#ff8989';
-var GOOD_COLOR = '#89ff89';
-var DEFAULT_INSTANT_RESULTS = true;
+const DEFAULT_MAX_RESULTS = 500;
+const DEFAULT_HIGHLIGHT_COLOR = '#ffff00';
+const DEFAULT_SELECTED_COLOR = '#ff9900';
+const DEFAULT_TEXT_COLOR = '#000000';
+const DEFAULT_MAX_HISTORY_LENGTH = 30;
+const WHITE_COLOR = '#ffffff';
+const ERROR_COLOR = '#ff8989';
+const GOOD_COLOR = '#89ff89';
+let DEFAULT_INSTANT_RESULTS = true;
 /*** CONSTANTS ***/
 
 /*** FUNCTIONS ***/
 /* Mark status text */
 function markStatus(text, time){
-  var time = typeof time !== 'undefined' ? time : 1250;
-  var status = document.getElementById('status');
+  let time = typeof time !== 'undefined' ? time : 1250;
+  let status = document.getElementById('status');
   status.textContent = text;
   setTimeout(function() {
     status.textContent = '';
@@ -23,9 +23,9 @@ function markStatus(text, time){
 
 /* Validate input for max results */
 function validateMaxResults() {
-  var inputVal = document.getElementById('maxResults').value;
+  let inputVal = document.getElementById('maxResults').value;
   if (inputVal.match(/^\d+$/) && Number.isInteger(parseInt(inputVal))) {
-    var num = parseInt(inputVal);
+    let num = parseInt(inputVal);
     if (num < Number.MAX_SAFE_INTEGER) {
       if (document.getElementById('maxResults') === document.activeElement) {
         document.getElementById('maxResults').style.backgroundColor = GOOD_COLOR;
@@ -47,9 +47,9 @@ function validateMaxResults() {
 
 /* Save options to storage */
 function saveOptions() {
-  var maxResults = validateMaxResults();
+  let maxResults = validateMaxResults();
   if (maxResults) {
-    var options = {
+    let options = {
       'highlightColor' : document.getElementById('highlightColor').value,
       'selectedColor' : document.getElementById('selectedColor').value,
       'textColor' : document.getElementById('textColor').value,

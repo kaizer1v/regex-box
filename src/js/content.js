@@ -64,12 +64,12 @@ function isExpandable(node) {
 /* Highlight all text that matches regex */
 function highlight(regex, highlightColor, selectedColor, textColor, maxResults) {
   function highlightRecursive(node) {
-    if(searchInfo.length >= maxResults){
+    if(searchInfo.length >= maxResults) {
       return;
     }
-    if (isTextNode(node)) {
+    if(isTextNode(node)) {
       var index = node.data.search(regex);
-      if (index >= 0 && node.data.length > 0) {
+      if(index >= 0 && node.data.length > 0) {
         var matchedText = node.data.match(regex)[0];
         var matchedTextNode = node.splitText(index);
         matchedTextNode.splitText(matchedText.length);
@@ -83,9 +83,9 @@ function highlight(regex, highlightColor, selectedColor, textColor, maxResults) 
         searchInfo.length += 1;
         return 1;
       }
-    } else if (isExpandable(node)) {
+    } else if(isExpandable(node)) {
         var children = node.childNodes;
-        for (var i = 0; i < children.length; ++i) {
+        for(var i = 0; i < children.length; ++i) {
           var child = children[i];
           i += highlightRecursive(child);
         }

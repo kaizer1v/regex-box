@@ -5,20 +5,27 @@ body {
 
 #regex_box {
   border: 2px solid #007BFF;
-  padding: 5px;
-  width: 300px;
-  flex-direction: columns;
-  display: flex;
+  width: 400px;
+  position: relative;
 }
-  #regex_box .pre_post {
-    outline: 0;
-    color: #818182;
-  }
-  #regex_box #inputRegex {
+  #inputRegex {
+    float: left;
     font-family: monospace;
     font-size: 1rem;
-    padding: 0 5px;
-    outline: 0px solid transparent;
+    padding: 10px;
+    width: 75%;
+    border: none;
+    outline: 1px solid transparent;
+    background-color: transparent;
+  }
+
+  #numResults {
+    color: #818182;
+    font-family: monospace;
+    font-size: 10pt;
+    display: block;
+    float: left;
+    margin-top: 11px;
   }
 
 a:link, a:visited {
@@ -40,19 +47,6 @@ a:hover, a.selected {
   position: relative;
   text-align: right;
   display: flex;
-}
-
-#numResults {
-  color: #818182;
-  font-family: monospace;
-  position: absolute;
-  top: 1em;
-  right: 19em;
-  min-width: 4em;
-  max-width: 6em;
-  overflow:auto;
-  white-space: nowrap;
-  font-size: 10pt;
 }
 
 #cheatsheet_content {

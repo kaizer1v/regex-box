@@ -46,6 +46,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
  */
 txt_regex.addEventListener('keydown', (e) => {
   if(e.key == 'Enter' && e.key != 'Shift') {                // ENTER
+    e.preventDefault()
     next_prev(true)
   } else if (e.key == 'Shift' && (e.key == 'Enter')) {      // SHIFT + ENTER
     next_prev(false)
@@ -61,7 +62,7 @@ txt_regex.addEventListener('keydown', (e) => {
  * Sets regbex text box's state (error or normal) based on validity
  */
 let set_status_regbox = (valid) => {
-  txt_regex.style.backgroundColor = (!valid) ? ERROR_COLOR : WHITE_COLOR
+  txt_regex.parentNode.style.backgroundColor = (!valid) ? ERROR_COLOR : WHITE_COLOR
   return
 }
 
