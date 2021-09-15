@@ -219,11 +219,14 @@ btn_prev.addEventListener('click', (e) => {
   next_prev(false)
 })
 
-document.getElementById('clear').addEventListener('click', (e) => {
-  txt_regex.value = ''
-  txt_regex.focus()
-  search()
-});
+/**
+ * Clear text box contents - This has been removed
+ */
+// document.getElementById('clear').addEventListener('click', (e) => {
+//   txt_regex.value = ''
+//   txt_regex.focus()
+//   search()
+// });
 
 document.getElementById('show-history').addEventListener('click', (e) => {
   let makeVisible = document.getElementById('history').style.display == 'none'
@@ -240,6 +243,12 @@ document.getElementById('cheatsheet').addEventListener('click', (e) => {
   let makeVisible = document.getElementById('cheatsheet_content').style.display == 'none'
   document.getElementById('cheatsheet_content').style.display = makeVisible ? 'block' : 'none'
   document.getElementById('cheatsheet').className = (makeVisible) ? 'selected' : ''
+})
+
+document.getElementById('flags').addEventListener('click', (e) => {
+  let makeVisible = document.getElementById('flag_options').style.display == 'none'
+  document.getElementById('flag_options').style.display = makeVisible ? 'block' : 'none'
+  document.getElementById('flags').className = (makeVisible) ? 'selected' : ''
 })
 
 btn_flag.addEventListener('click', (e) => {
