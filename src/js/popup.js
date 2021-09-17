@@ -216,15 +216,6 @@ document.getElementById('prev').addEventListener('click', () => {
   next_prev(false)
 })
 
-/**
- * Clear text box contents - This has been removed
- */
-// document.getElementById('clear').addEventListener('click', (e) => {
-//   txt_regex.value = ''
-//   txt_regex.focus()
-//   search()
-// });
-
 document.getElementById('show-history').addEventListener('click', () => {
   let makeVisible = document.getElementById('history').style.display == 'none'
   document.getElementById('history').style.display = makeVisible ? 'block' : 'none'
@@ -287,7 +278,7 @@ chrome.storage.local.get({
   document.getElementById('history').style.display = result.isSearchHistoryVisible ? 'block' : 'none';
   document.getElementById('show-history').className = (result.isSearchHistoryVisible) ? 'selected' : '';
   updateHistoryDiv();
-});
+})
 
 /* Get search info if there is any */
 chrome.tabs.query({
@@ -303,7 +294,4 @@ chrome.tabs.query({
       }
     });
   }
-});
-
-/* Focus on input */
-txt_regex.focus()
+})
