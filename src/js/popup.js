@@ -1,29 +1,28 @@
-
-/*** CONSTANTS ***/
-const ERROR_COLOR = '#F8D7DA'
-const WHITE_COLOR = '#ffffff'
-const ERROR_TEXT = "Content script was not loaded on this url or please wait for the page to load."
-const HISTORY_IS_EMPTY_TEXT = "Search history is empty."
-const CLEAR_ALL_HISTORY_TEXT = "Clear History"
-const MAX_HISTORY_LENGTH = 30
+/*** DEFAULTS ***/
+const DEFAULTS = {
+  'error_color': '#F8D7DA',
+  'white_color': '#ffffff',
+  'error_text': "Content script was not loaded on this url or please wait for the page to load.",
+  'history_is_empty_text': "Search history is empty.",
+  'clear_all_history_text': "Clear History",
+  'max_history_length': 30
+}
 
 /*** VARIABLES ***/
-let DEFAULT_CASE_INSENSITIVE = false
-let DEFAULT_INSTANT_RESULTS = true
-let sentInput = false;          // ???
-let searchHistory = null;
-let maxHistoryLength = MAX_HISTORY_LENGTH;
-/*** VARIABLES ***/
+// let DEFAULT_CASE_INSENSITIVE = false
+let sentInput = false,          // ???
+    searchHistory = null,
+    maxHistoryLength = DEFAULTS['max_history_length']
 
 /*** ELEMENTS ***/
-const txt_regex = document.getElementById('inputRegex');
-const num_results = document.getElementById('numResults');
+const txt_regex = document.getElementById('inputRegex'),
+      num_results = document.getElementById('numResults')
 
 /**
  * Initialisation - run when the extension is opened
  */
 /* Received returnSearchInfo message, populate popup UI */
-chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+chrome.runtime.onMessage.addListener((request) => {
   if(request.message == 'returnSearchInfo') {
     // update the results `0 of 0` text
     let sel = (request.numResults > 0) ? request.currentSelection + 1 : request.currentSelection
@@ -62,7 +61,7 @@ txt_regex.addEventListener('keydown', (e) => {
  * Sets regbex text box's state (error or normal) based on validity
  */
 let set_status_regbox = (valid) => {
-  txt_regex.parentNode.style.backgroundColor = (!valid) ? ERROR_COLOR : WHITE_COLOR
+  txt_regex.parentNode.style.backgroundColor = (!valid) ? DEFAULTS['error_color'] : DEFAULTS['white_color']
   return
 }
 
@@ -105,6 +104,7 @@ let is_valid_regex = (pattern) => {
  */
 let next_prev = (next=true) => {
   let msg = (next) ? 'selectNextNode' : 'selectPrevNode'
+
   chrome.tabs.query({
     'active': true,
     'currentWindow': true
@@ -155,7 +155,7 @@ let updateHistoryDiv = () => {
     // default history is empty message
     let span = document.createElement('span');
     span.className = 'historyIsEmptyMessage';
-    span.textContent = HISTORY_IS_EMPTY_TEXT;
+    span.textContent = DEFAULTS['history_is_empty_text'];
     historyDiv.appendChild(span);
 
     if(searchHistory.length != 0) {
@@ -168,7 +168,7 @@ let updateHistoryDiv = () => {
       let clearButton = document.createElement('a');
       clearButton.href = '#';
       clearButton.type = 'button';
-      clearButton.textContent = CLEAR_ALL_HISTORY_TEXT;
+      clearButton.textContent = DEFAULTS['clear_all_history_text'];
       clearButton.className = 'clearHistoryButton';
       clearButton.addEventListener('click', clearSearchHistory);
       historyDiv.appendChild(clearButton);
@@ -208,11 +208,11 @@ let clearSearchHistory = () => {
 
 
 /*** LISTENERS ***/
-document.getElementById('next').addEventListener('click', (e) => {
+document.getElementById('next').addEventListener('click', () => {
   next_prev(true)
 })
 
-document.getElementById('prev').addEventListener('click', (e) => {
+document.getElementById('prev').addEventListener('click', () => {
   next_prev(false)
 })
 
@@ -225,33 +225,33 @@ document.getElementById('prev').addEventListener('click', (e) => {
 //   search()
 // });
 
-document.getElementById('show-history').addEventListener('click', (e) => {
+document.getElementById('show-history').addEventListener('click', () => {
   let makeVisible = document.getElementById('history').style.display == 'none'
   document.getElementById('history').style.display = makeVisible ? 'block' : 'none'
   document.getElementById('show-history').className = (makeVisible) ? 'selected' : ''
 })
 
-document.getElementById('cheatsheet').addEventListener('click', (e) => {
+document.getElementById('cheatsheet').addEventListener('click', () => {
   let makeVisible = document.getElementById('cheatsheet_content').style.display == 'none'
   document.getElementById('cheatsheet_content').style.display = makeVisible ? 'block' : 'none'
   document.getElementById('cheatsheet').className = (makeVisible) ? 'selected' : ''
 })
 
-document.getElementById('flags').addEventListener('click', (e) => {
+document.getElementById('flags').addEventListener('click', () => {
   let makeVisible = document.getElementById('flag_options').style.display == 'none'
   document.getElementById('flag_options').style.display = makeVisible ? 'block' : 'none'
   document.getElementById('flags').className = (makeVisible) ? 'selected' : ''
 })
 
-document.getElementById('insensitive').addEventListener('click', (e) => {
-  let is_on = (e.target.dataset.on === 'true') ? true : false
-  e.target.setAttribute('data-on', !is_on)
-  e.target.className = (is_on) ? 'selected' : ''
-  chrome.storage.local.set({ caseInsensitive: is_on })
-  search(true)
-})
+// document.getElementById('insensitive').addEventListener('click', () => {
+//   let is_on = (e.target.dataset.on === 'true') ? true : false
+//   e.target.setAttribute('data-on', !is_on)
+//   e.target.className = (is_on) ? 'selected' : ''
+//   chrome.storage.local.set({ caseInsensitive: is_on })
+//   search(true)
+// })
 
-document.getElementById('copy-to-clipboard').addEventListener('click', (e) => {
+document.getElementById('copy-to-clipboard').addEventListener('click', () => {
   chrome.tabs.query({ 'active': true, 'currentWindow': true }, (tabs) => {
     if(typeof tabs[0].id != 'undefined') {
       chrome.tabs.sendMessage(tabs[0].id, {
@@ -266,13 +266,13 @@ document.getElementById('copy-to-clipboard').addEventListener('click', (e) => {
 /*** INIT ***/
 /* Retrieve from storage whether we should use instant results or not */
 chrome.storage.local.get({
-  'instantResults' : DEFAULT_INSTANT_RESULTS,
-  'maxHistoryLength' : MAX_HISTORY_LENGTH,
+  'instantResults' : true,
+  'maxHistoryLength' : DEFAULTS['max_history_length'],
   'searchHistory' : null
   // 'isSearchHistoryVisible' : false
 }, (result) => {
   let elem = (result.instantResults) ? 'input' : 'change'
-  txt_regex.addEventListener(elem, (e) => {
+  txt_regex.addEventListener(elem, () => {
     search()
   })
 
@@ -299,7 +299,7 @@ chrome.tabs.query({
       'message' : 'getSearchInfo'
     }, (resp) => {
       if(!resp) {
-        document.getElementById('error').textContent = ERROR_TEXT
+        document.getElementById('error').textContent = DEFAULTS['error_text']
       }
     });
   }

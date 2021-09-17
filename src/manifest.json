@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Regex Box",
-  "description": "A Regular Expression based search box for chrome",
+  "description": "A Regular Expression search box for chrome",
   "version": "1.0.0",
   "action": {
     "default_popup": "popup.html",    // i.e. when the user clicks the popup icon, render `popup.html`

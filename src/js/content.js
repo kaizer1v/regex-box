@@ -12,12 +12,12 @@ var DEFAULT_TEXT_COLOR = '#000000';
 var DEFAULT_CASE_INSENSITIVE = false;
 /*** CONSTANTS ***/
 
-/*** VARIABLES ***/
+/*** GLOBAL VARIABLE ***/
 var searchInfo;
-/*** VARIABLES ***/
+
                      
 /*** LIBRARY FUNCTIONS ***/
-Element.prototype.documentOffsetTop = function () {
+Element.prototype.documentOffsetTop = () => {
   return this.offsetTop + ( this.offsetParent ? this.offsetParent.documentOffsetTop() : 0 );
 };
 Element.prototype.visible = function() {
@@ -106,23 +106,29 @@ function removeHighlight() {
 };
 
 /* Scroll page to given element */
-function scrollToElement(element) {
-    element.scrollIntoView(); 
-    var top = element.documentOffsetTop() - ( window.innerHeight / 2 );
-    window.scrollTo( 0, Math.max(top, window.pageYOffset - (window.innerHeight/2))) ;
+let scrollToElement = (element) => {
+    element.scrollIntoView()
+    let top = element.documentOffsetTop() - (window.innerHeight / 2)
+    window.scrollTo(0, Math.max(top, window.pageYOffset - (window.innerHeight / 2)))
 }
 
-/* Select first regex match on page */
-function selectFirstNode(selectedColor) {
-  var length =  searchInfo.length;
-  if(length > 0) {
-    searchInfo.highlightedNodes[0].className = SELECTED_CLASS;
-    searchInfo.highlightedNodes[0].style.backgroundColor = selectedColor;
-    parentNode = searchInfo.highlightedNodes[0].parentNode;
-    if (parentNode.nodeType === 1) {
-      parentNode.focus();
+/**
+ *  Select first regex match on page
+ * config = {
+ *   selected_class: 'selected'
+ *   selected_color: ''
+ * }
+ */
+let selectFirstNode = (selectedColor, selectedClass) => {
+  if(searchInfo.length > 0) {
+    searchInfo.highlightedNodes[0].className = selectedClass
+    searchInfo.highlightedNodes[0].style.backgroundColor = selectedColor
+
+    parentNode = searchInfo.highlightedNodes[0].parentNode
+    if(parentNode.nodeType === 1) {
+      parentNode.focus()
     } else if (parentNode.parentNode.nodeType == 1) {
-      parentNode.parentNode.focus();
+      parentNode.parentNode.focus()
     }
     scrollToElement(searchInfo.highlightedNodes[0]);
   }
@@ -196,7 +202,7 @@ function search(regexString, configurationChanged) {
           regex = new RegExp(regexString, 'i');
         }
         highlight(regex, result.highlightColor, result.selectedColor, result.textColor, result.maxResults);
-        selectFirstNode(result.selectedColor);
+        selectFirstNode(result.selectedColor, SELECTED_CLASS)
         returnSearchInfo('search');
       }
     );
