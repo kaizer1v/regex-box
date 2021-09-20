@@ -1,18 +1,17 @@
-// 1. Receive the message from content.js page
-// make an instance of the RegEx
-// make it do stuff like highlight the matched results
 chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
   console.log('received', msg)
-  let regex
+  let regex;
+  let results = [];
 
   try {
-    regex = new RegExp(msg.input)
+    regex = new RegExp(msg.input);
   } catch(e) {
-    console.error(e)
-    return false
+    console.error(e);
+    return false;
   }
 
   // STEP 1 - highlight all text matching regex pattern
+  highlight_remove('mark.highlighted, mark.selected')
   highlight(regex, document.getElementsByTagName('body')[0])
 
   // STEP 2 - select the first matching result
@@ -21,11 +20,10 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
   // STEP 5 - on changing of regex value in textbox, re-search and highlight new matching results
 })
 
-
 /**
- * Search and highlight regex pattern within a given section
+ * Search and highlight regex pattern within a given `el`
  */
-let highlight = (regex, section) => {
+let highlight = (regex, el) => {
   let unexpandable = /(script|style|svg|audio|canvas|figure|video|select|input|textarea)/i;
 
   /**
@@ -40,26 +38,29 @@ let highlight = (regex, section) => {
    * Return true if `el` is expandable/collapsed, else false
    */
   let is_collapsed = (el) => {
-    return (el) && (el.nodeType === 1) && (el.childNodes) && (!unexpandable.test(el.tagName)) && (is_visible(el))
+    return (el) && (el.nodeType === 1) && (el.hasChildNodes()) && (!unexpandable.test(el.tagName)) && (is_visible(el))
   }
 
-  (function recur(el) {
+  let recur = (el) => {
     // if `el` type is a text element
     if(el && el.nodeType === 3) {
-      var index = el.data.search(regex);
-      if(index >= 0 && el.data.length > 0) {
-        var matchedText = el.data.match(regex)[0];
-        var matchedTextNode = el.splitText(index);
-        matchedTextNode.splitText(matchedText.length);
-        var spanNode = document.createElement('highlight-tag');
-        spanNode.className = 'highlighted';
-        spanNode.style.backgroundColor = '#ffff00';
-        spanNode.style.color = '#ff9900';
-        spanNode.appendChild(matchedTextNode.cloneNode(true));
-        matchedTextNode.parentNode.replaceChild(spanNode, matchedTextNode);
-        // searchInfo.highlightedNodes.push(spanNode);
-        // searchInfo.length += 1;
-        return 1;
+      let result_index = el.data.search(regex)       // search within content of the element
+      if(result_index >= 0) {
+        let matchedText = el.data.match(regex)[0]
+        let matchedTextNode = el.splitText(result_index)      // ?? could have been `el`
+        matchedTextNode.splitText(matchedText.length)
+
+        let tag = document.createElement('mark')
+        tag.className = 'highlighted'
+        tag.style.backgroundColor = '#ffff00'
+        tag.style.color = '#ff9900'
+        tag.appendChild(matchedTextNode.cloneNode(true))    // create a deep copy of the node
+        matchedTextNode.parentNode.replaceChild(tag, matchedTextNode)
+
+        // results.push(tag)
+        // searchInfo.length += 1
+        // debugger;
+        return
       }
     } else if(is_collapsed(el)) {
       for(let i = 0; i < el.childNodes.length; ++i) {
@@ -67,66 +68,77 @@ let highlight = (regex, section) => {
         i += recur(child)
       }
     }
-    return 0;
-  }(section))
+    return 0
+  }
+
+  recur(el)
 }
 
 /**
  * Clear all highlighting from page
  */
-let highlight_remove = () => {
-  let highlighted = document.body.querySelector('highlight-tag.highlighted')
-  let selected = document.body.querySelector('highlight-tag.selected')
-  while(highlighted) { highlighted.outerHTML = highlighted.innerHTML }
-  while(selected) { selected.outerHTML = selected.innerHTML }
+let highlight_remove = (q) => {
+  let highlighted = document.body.querySelectorAll(q)
+  highlighted.forEach((e) => {
+    e.outerHTML = e.innerHTML
+  })
 }
 
 /**
  * Select regex matched element
  */
-let el_select = (highlightedColor, selectedColor, getNext) => {
-  var length = searchInfo.length;
-  if(length > 0) {
-    searchInfo.highlightedNodes[searchInfo.selectedIndex].className = HIGHLIGHT_CLASS;
-    searchInfo.highlightedNodes[searchInfo.selectedIndex].style.backgroundColor = highlightedColor;
-      if(getNext) {
-        if(searchInfo.selectedIndex === length - 1) {
-          searchInfo.selectedIndex = 0;
-        } else {
-          searchInfo.selectedIndex += 1;
-        }
-      } else {
-        if(searchInfo.selectedIndex === 0) {
-          searchInfo.selectedIndex = length - 1;
-        } else {
-          searchInfo.selectedIndex -= 1;
-        }
-      }
-    searchInfo.highlightedNodes[searchInfo.selectedIndex].className = SELECTED_CLASS;
-    searchInfo.highlightedNodes[searchInfo.selectedIndex].style.backgroundColor = selectedColor;
-    parentNode = searchInfo.highlightedNodes[searchInfo.selectedIndex].parentNode;
-    if (parentNode.nodeType === 1) {
-      parentNode.focus();
-    } else if (parentNode.parentNode.nodeType == 1) {
-      parentNode.parentNode.focus();
+let el_select = (index, get_next) => {
+  if(results.length === 0) return
+  results[index].className = 'highlighted'
+  results[index].style.backgroundColor = green
+
+  if(get_next) {
+    if(index === length - 1) {
+      index = 0;
+    } else {
+      index += 1;
     }
-    returnSearchInfo('selectNode');
-    scrollToElement(searchInfo.highlightedNodes[searchInfo.selectedIndex]);
+  } else {
+    if(index === 0) {
+      index = length - 1;
+    } else {
+      index -= 1;
+    }
   }
+  results[index].className = 'selected'
+  results[index].style.backgroundColor = red
+  parentNode = results[index].parentNode;
+  if(parentNode.nodeType === 1) {
+    parentNode.focus()
+  } else if(parentNode.parentNode.nodeType == 1) {
+    parentNode.parentNode.focus()
+  }
+  // returnSearchInfo('selectNode')
+  el_scroll_to(results[index])
+}
+
+
+/**
+ * Scroll to `el`'s position on page
+ */
+let el_scroll_to = (el) => {
+  el.scrollIntoView()
+  let top = el.documentOffsetTop() - (window.innerHeight / 2)
+  window.scrollTo(0, Math.max(top, window.pageYOffset - (window.innerHeight / 2)))
 }
 
 /**
  * Select next matched element
  */
 let result_next = (highlightedColor, selectedColor) => {
-  node_select(highlightedColor, selectedColor, true)
+  el_select(highlightedColor, selectedColor, true)
 }
 
 /**
  * Select previous matched element
  */
 let result_prev = (highlightedColor, selectedColor) => {
-  node_select(highlightedColor, selectedColor, false)
+  el_select(highlightedColor, selectedColor, false)
 }
 
 
