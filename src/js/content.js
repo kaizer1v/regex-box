@@ -12,15 +12,14 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
     return false
   }
 
-  // highlight all text matching regex pattern
+  // STEP 1 - highlight all text matching regex pattern
   highlight(regex, document.getElementsByTagName('body')[0])
 
+  // STEP 2 - select the first matching result
+  // STEP 3 - on `enter` move to next matching result + on `shift+enter` move to prev matching result
+  // STEP 4 - on `esc` remove all highlights and close regexbox
+  // STEP 5 - on changing of regex value in textbox, re-search and highlight new matching results
 })
-
-Element.prototype.visible = function() {
-return (!window.getComputedStyle(this) || window.getComputedStyle(this).getPropertyValue('display') == '' ||
-   window.getComputedStyle(this).getPropertyValue('display') != 'none')
-}
 
 
 /**
@@ -29,40 +28,107 @@ return (!window.getComputedStyle(this) || window.getComputedStyle(this).getPrope
 let highlight = (regex, section) => {
   let unexpandable = /(script|style|svg|audio|canvas|figure|video|select|input|textarea)/i;
 
-  let isExpandable = (node) => {
-    return (node) && (node.nodeType === 1) && (node.childNodes) && (!unexpandable.test(node.tagName)) && (node.visible())
+  /**
+   * Return true if `el` is visible on browser, else false
+   */
+  let is_visible = (el) => {
+    let style = window.getComputedStyle(el)
+    return ((el.offsetParent !== null) || (style.display !== 'none'))
   }
 
-  (function highlightRecursive(node) {
-    // if node type is a text element
-    if(node && node.nodeType === 3) {
-      console.log('hereeeee');
-      var index = node.data.search(regex);
-      if(index >= 0 && node.data.length > 0) {
-        var matchedText = node.data.match(regex)[0];
-        var matchedTextNode = node.splitText(index);
+  /**
+   * Return true if `el` is expandable/collapsed, else false
+   */
+  let is_collapsed = (el) => {
+    return (el) && (el.nodeType === 1) && (el.childNodes) && (!unexpandable.test(el.tagName)) && (is_visible(el))
+  }
+
+  (function recur(el) {
+    // if `el` type is a text element
+    if(el && el.nodeType === 3) {
+      var index = el.data.search(regex);
+      if(index >= 0 && el.data.length > 0) {
+        var matchedText = el.data.match(regex)[0];
+        var matchedTextNode = el.splitText(index);
         matchedTextNode.splitText(matchedText.length);
-        var spanNode = document.createElement(HIGHLIGHT_TAG);
+        var spanNode = document.createElement('highlight-tag');
         spanNode.className = 'highlighted';
         spanNode.style.backgroundColor = '#ffff00';
         spanNode.style.color = '#ff9900';
         spanNode.appendChild(matchedTextNode.cloneNode(true));
         matchedTextNode.parentNode.replaceChild(spanNode, matchedTextNode);
-        searchInfo.highlightedNodes.push(spanNode);
-        searchInfo.length += 1;
+        // searchInfo.highlightedNodes.push(spanNode);
+        // searchInfo.length += 1;
         return 1;
       }
-    } else if(isExpandable(node)) {
-      for(let i = 0; i < node.childNodes.length; ++i) {
-        let child = node.childNodes[i]
-        i += highlightRecursive(child)
+    } else if(is_collapsed(el)) {
+      for(let i = 0; i < el.childNodes.length; ++i) {
+        let child = el.childNodes[i]
+        i += recur(child)
       }
     }
     return 0;
   }(section))
-
-  // highlightRecursive(section)
 }
+
+/**
+ * Clear all highlighting from page
+ */
+let highlight_remove = () => {
+  let highlighted = document.body.querySelector('highlight-tag.highlighted')
+  let selected = document.body.querySelector('highlight-tag.selected')
+  while(highlighted) { highlighted.outerHTML = highlighted.innerHTML }
+  while(selected) { selected.outerHTML = selected.innerHTML }
+}
+
+/**
+ * Select regex matched element
+ */
+let el_select = (highlightedColor, selectedColor, getNext) => {
+  var length = searchInfo.length;
+  if(length > 0) {
+    searchInfo.highlightedNodes[searchInfo.selectedIndex].className = HIGHLIGHT_CLASS;
+    searchInfo.highlightedNodes[searchInfo.selectedIndex].style.backgroundColor = highlightedColor;
+      if(getNext) {
+        if(searchInfo.selectedIndex === length - 1) {
+          searchInfo.selectedIndex = 0;
+        } else {
+          searchInfo.selectedIndex += 1;
+        }
+      } else {
+        if(searchInfo.selectedIndex === 0) {
+          searchInfo.selectedIndex = length - 1;
+        } else {
+          searchInfo.selectedIndex -= 1;
+        }
+      }
+    searchInfo.highlightedNodes[searchInfo.selectedIndex].className = SELECTED_CLASS;
+    searchInfo.highlightedNodes[searchInfo.selectedIndex].style.backgroundColor = selectedColor;
+    parentNode = searchInfo.highlightedNodes[searchInfo.selectedIndex].parentNode;
+    if (parentNode.nodeType === 1) {
+      parentNode.focus();
+    } else if (parentNode.parentNode.nodeType == 1) {
+      parentNode.parentNode.focus();
+    }
+    returnSearchInfo('selectNode');
+    scrollToElement(searchInfo.highlightedNodes[searchInfo.selectedIndex]);
+  }
+}
+
+/**
+ * Select next matched element
+ */
+let result_next = (highlightedColor, selectedColor) => {
+  node_select(highlightedColor, selectedColor, true)
+}
+
+/**
+ * Select previous matched element
+ */
+let result_prev = (highlightedColor, selectedColor) => {
+  node_select(highlightedColor, selectedColor, false)
+}
+
 
 
 
