@@ -1,30 +1,27 @@
-chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
-  console.log('received', msg)
+chrome.runtime.onMessage.addListener((req, sender, sendResponse) => {
   let regex;
-  let results = [];
 
   try {
-    regex = new RegExp(msg.input);
+    regex = new RegExp(req.input);
   } catch(e) {
-    console.error(e);
-    return false;
+    console.error(e)
+    return false
   }
 
-  // STEP 1 - highlight all text matching regex pattern
+  // remove old highlights & highlight new matches again
   highlight_remove('mark.highlighted, mark.selected')
   highlight(regex, document.getElementsByTagName('body')[0])
 
-  // STEP 2 - select the first matching result
-  // STEP 3 - on `enter` move to next matching result + on `shift+enter` move to prev matching result
-  // STEP 4 - on `esc` remove all highlights and close regexbox
-  // STEP 5 - on changing of regex value in textbox, re-search and highlight new matching results
+  // sendResponse({ 'is_new_search': false })
 })
 
 /**
  * Search and highlight regex pattern within a given `el`
  */
-let highlight = (regex, el) => {
-  let unexpandable = /(script|style|svg|audio|canvas|figure|video|select|input|textarea)/i;
+let highlight = (regex, el=document.getElementsByTagName('body')[0]) => {
+  let omit = /(html|title|iframe|meta|link|script|style|svg|audio|canvas|figure|video|select|input|textarea)/i
+  // let results = []
+  console.log(regex, '>>><<<<', el);
 
   /**
    * Return true if `el` is visible on browser, else false
@@ -37,42 +34,97 @@ let highlight = (regex, el) => {
   /**
    * Return true if `el` is expandable/collapsed, else false
    */
-  let is_collapsed = (el) => {
-    return (el) && (el.nodeType === 1) && (el.hasChildNodes()) && (!unexpandable.test(el.tagName)) && (is_visible(el))
+  let is_hidden = (el) => {
+    return (el.nodeType === 1) && (el.hasChildNodes()) && (!omit.test(el.tagName)) && (is_visible(el))
   }
 
   let recur = (el) => {
-    // if `el` type is a text element
-    if(el && el.nodeType === 3) {
-      let result_index = el.data.search(regex)       // search within content of the element
-      if(result_index >= 0) {
+    // if(searchInfo.length >= maxResults) {
+    //   return;
+    // }
+
+    // if `el` type is a text, then
+    if (el.nodeType === 3) {
+
+      // check if the text matches the regex pattern
+      var index = el.data.search(regex)
+
+      // if regex matches the text, then
+      if(index >= 0) {
+
+        // extract the matched text into a new node using splitText
         let matchedText = el.data.match(regex)[0]
-        let matchedTextNode = el.splitText(result_index)      // ?? could have been `el`
+        let matchedTextNode = el.splitText(index)
         matchedTextNode.splitText(matchedText.length)
 
-        let tag = document.createElement('mark')
-        tag.className = 'highlighted'
-        tag.style.backgroundColor = '#ffff00'
-        tag.style.color = '#ff9900'
-        tag.appendChild(matchedTextNode.cloneNode(true))    // create a deep copy of the node
-        matchedTextNode.parentNode.replaceChild(tag, matchedTextNode)
+        // create new highlight element & append extracted text into it
+        let mark = document.createElement('mark')
+        mark.className = 'highlighted'
+        mark.style.backgroundColor = 'red'
+        mark.style.color = 'white'
+        mark.appendChild(matchedTextNode.cloneNode(true))
 
-        // results.push(tag)
-        // searchInfo.length += 1
-        // debugger;
-        return
+        // replace the original matched text with the new mark node
+        matchedTextNode.parentNode.replaceChild(mark, matchedTextNode)
+
+        // searchInfo.highlightedNodes.push(mark);
+        // searchInfo.length += 1;
+        return 1
       }
-    } else if(is_collapsed(el)) {
+    } else if(is_hidden(el)) {
       for(let i = 0; i < el.childNodes.length; ++i) {
-        let child = el.childNodes[i]
-        i += recur(child)
+        i += recur(el.childNodes[i])
       }
     }
     return 0
   }
-
-  recur(el)
+  recur(document.getElementsByTagName('body')[0])
 }
+/**
+ * https://j11y.io/javascript/find-and-replace-text-with-javascript/
+ */
+// let results = []
+// function findAndReplace(searchText, searchNode) {
+//   // if(!searchText || typeof replacement === 'undefined') {
+//   //   // Throw error here if you want...
+//   //   return;
+//   // }
+//   var regex = searchText,
+//       childNodes = (searchNode || document.body).childNodes,
+//       cnLength = childNodes.length,
+//       excludes = 'html,head,style,title,link,meta,script,object,iframe';
+//   while(cnLength--) {
+//     var currentNode = childNodes[cnLength];
+//     if(currentNode.nodeType === 1 && (excludes + ',').indexOf(currentNode.nodeName.toLowerCase() + ',') === -1) {
+//       // if the node is a container, then search inside the container
+//       findAndReplace(searchText, currentNode);
+//     }
+//     if(currentNode.nodeType !== 3 || !regex.test(currentNode.data)) {     // if no match, then continue to next node
+//       continue;
+//     }
+
+//     // if currentNode is a `text`
+//     let result_index = currentNode.data.search(regex)                // search within content of the element
+//     if(result_index >= 0) {
+
+//       let matchedText = currentNode.data.match(regex)[0]
+//       let matchedTextNode = currentNode.splitText(result_index)
+//       matchedTextNode.splitText(matchedText.length)
+//       console.log(matchedTextNode);
+
+//       let tag = document.createElement('mark')
+//       tag.className = 'highlighted'
+//       tag.style.backgroundColor = 'red'
+//       tag.style.color = 'white'
+//       tag.appendChild(matchedTextNode.cloneNode(true))    // create a deep copy of the node
+
+//       matchedTextNode.parentNode.replaceChild(tag, matchedTextNode)
+//       results.push(currentNode)
+//     }
+//     console.log(results);
+//     return results
+//   }
+// }
 
 /**
  * Clear all highlighting from page
@@ -106,7 +158,7 @@ let el_select = (index, get_next) => {
     }
   }
   results[index].className = 'selected'
-  results[index].style.backgroundColor = red
+  results[index].style.backgroundColor = orange
   parentNode = results[index].parentNode;
   if(parentNode.nodeType === 1) {
     parentNode.focus()
