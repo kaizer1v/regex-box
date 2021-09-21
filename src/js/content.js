@@ -1,5 +1,6 @@
 chrome.runtime.onMessage.addListener((req, sender, sendResponse) => {
   let regex;
+  console.log(req)
 
   try {
     regex = new RegExp(req.input);
@@ -12,17 +13,26 @@ chrome.runtime.onMessage.addListener((req, sender, sendResponse) => {
   highlight_remove('mark.highlighted, mark.selected')
   highlight(regex, document.getElementsByTagName('body')[0])
 
-  // sendResponse({ 'is_new_search': false })
+  sendResponse({
+    'results_index': 1,
+    'results_total': 100
+  })
 })
 
 /**
  * Search and highlight regex pattern within a given `el`
+ *
+ * Params
+ *    `regex`: a regex object
+ *    `el`   : the element within which the search needs to be conducted
+ *
+ * Returns
+ *    `results_total`: total number of matched results
+ *    `results_index`: current highlighted result out of total
+ *    ``
  */
 let highlight = (regex, el=document.getElementsByTagName('body')[0]) => {
   let omit = /(html|title|iframe|meta|link|script|style|svg|audio|canvas|figure|video|select|input|textarea)/i
-  // let results = []
-  console.log(regex, '>>><<<<', el);
-
   /**
    * Return true if `el` is visible on browser, else false
    */
@@ -39,10 +49,6 @@ let highlight = (regex, el=document.getElementsByTagName('body')[0]) => {
   }
 
   let recur = (el) => {
-    // if(searchInfo.length >= maxResults) {
-    //   return;
-    // }
-
     // if `el` type is a text, then
     if (el.nodeType === 3) {
 
@@ -67,8 +73,6 @@ let highlight = (regex, el=document.getElementsByTagName('body')[0]) => {
         // replace the original matched text with the new mark node
         matchedTextNode.parentNode.replaceChild(mark, matchedTextNode)
 
-        // searchInfo.highlightedNodes.push(mark);
-        // searchInfo.length += 1;
         return 1
       }
     } else if(is_hidden(el)) {
@@ -80,54 +84,9 @@ let highlight = (regex, el=document.getElementsByTagName('body')[0]) => {
   }
   recur(document.getElementsByTagName('body')[0])
 }
-/**
- * https://j11y.io/javascript/find-and-replace-text-with-javascript/
- */
-// let results = []
-// function findAndReplace(searchText, searchNode) {
-//   // if(!searchText || typeof replacement === 'undefined') {
-//   //   // Throw error here if you want...
-//   //   return;
-//   // }
-//   var regex = searchText,
-//       childNodes = (searchNode || document.body).childNodes,
-//       cnLength = childNodes.length,
-//       excludes = 'html,head,style,title,link,meta,script,object,iframe';
-//   while(cnLength--) {
-//     var currentNode = childNodes[cnLength];
-//     if(currentNode.nodeType === 1 && (excludes + ',').indexOf(currentNode.nodeName.toLowerCase() + ',') === -1) {
-//       // if the node is a container, then search inside the container
-//       findAndReplace(searchText, currentNode);
-//     }
-//     if(currentNode.nodeType !== 3 || !regex.test(currentNode.data)) {     // if no match, then continue to next node
-//       continue;
-//     }
-
-//     // if currentNode is a `text`
-//     let result_index = currentNode.data.search(regex)                // search within content of the element
-//     if(result_index >= 0) {
-
-//       let matchedText = currentNode.data.match(regex)[0]
-//       let matchedTextNode = currentNode.splitText(result_index)
-//       matchedTextNode.splitText(matchedText.length)
-//       console.log(matchedTextNode);
-
-//       let tag = document.createElement('mark')
-//       tag.className = 'highlighted'
-//       tag.style.backgroundColor = 'red'
-//       tag.style.color = 'white'
-//       tag.appendChild(matchedTextNode.cloneNode(true))    // create a deep copy of the node
-
-//       matchedTextNode.parentNode.replaceChild(tag, matchedTextNode)
-//       results.push(currentNode)
-//     }
-//     console.log(results);
-//     return results
-//   }
-// }
 
 /**
- * Clear all highlighting from page
+ * Clear all highlighting from page for a given query selector
  */
 let highlight_remove = (q) => {
   let highlighted = document.body.querySelectorAll(q)

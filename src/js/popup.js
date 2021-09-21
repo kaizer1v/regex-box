@@ -1,46 +1,53 @@
-// let is_new_search = true
-// console.log('default = ', is_new_search)
-
-// document.getElementById('inputRegex').addEventListener('change', (e) => {
-//   // send the message to `content.js`
-//   chrome.tabs.query({ 'active': true, 'currentWindow': true }, (currTab) => {
-//     chrome.tabs.sendMessage(currTab[0].id, {
-//       'input': e.target.value,
-//       'tab': currTab[0],
-//       'is_new_search': is_new_search
-//     }, (resp) => {
-//       is_new_search = resp['is_new_search']
-//     })
-//   })
-// }, true)
-
-
 /**
  * Fire event whenever user types inside textbox
  */
 let map = []
+var input_changed = false
 
 // Watch on `keyup` as well as the `keydown` event
-onkeydown = onkeyup = (e) => {
+onkeydown = (e) => {
   map[e.keyCode] = e.type === 'keydown'
-  if(document.getElementById('inputRegex') === document.activeElement) {
-    if(!map[16] && map[13]) {
 
-      // send the regex text to `content.js`
-      chrome.tabs.query({ 'active': true, 'currentWindow': true }, (currTab) => {
-        chrome.tabs.sendMessage(currTab[0].id, {
-          'input': e.target.value,
-          'tab': currTab[0]
-        }, (resp) => {
-          console.log(resp)
-        })
+  if(document.getElementById('inputRegex') === document.activeElement) {
+
+    // changed text + pressed enter
+    if(!map[16] && map[13]) {
+      map[13] = false
+      send_message({
+        'input': e.target.value,
+        'new_search': input_changed
       })
+
+    // NOT changed text + pressed shift & enter
     } else if(map[16] && map[13]) {
-      console.log('shift + enter pressed')
+      map[13] = false
+      map[16] = false
+
+      send_message({
+        'input': e.target.value,
+        'new_search': input_changed
+      })
+    } else {
+      map[13] = false
+      map[16] = false
+      input_changed = true
     }
   }
 }
 
+let send_message = (params) => {
+  chrome.tabs.query({ 'active': true, 'currentWindow': true }, (currTab) => {
+    // update params with current tab info
+    params['tab'] = currTab[0]
+
+    // send params to `content.js` & expect a response
+    chrome.tabs.sendMessage(currTab[0].id, params, (resp) => {
+      // populate number of results on input box
+      document.getElementById('numResults').textContent = `${resp['results_index']} of ${resp['results_total']}`
+      input_changed = false
+    })
+  })
+}
 
 // /*** DEFAULTS ***/
 // const DEFAULTS = {
