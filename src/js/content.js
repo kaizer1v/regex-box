@@ -1,5 +1,8 @@
+let gl;   // declare a global variable `gl`
+
 chrome.runtime.onMessage.addListener((req, sender, sendResponse) => {
-  let regex;
+  let regex
+
   console.log(req)
 
   try {
@@ -9,13 +12,21 @@ chrome.runtime.onMessage.addListener((req, sender, sendResponse) => {
     return false
   }
 
-  // remove old highlights & highlight new matches again
-  highlight_remove('mark.highlighted, mark.selected')
-  highlight(regex, document.getElementsByTagName('body')[0])
+  if(req['new_search']) {
+    // remove old highlights & highlight new matches again
+    highlight_remove('mark.highlighted, mark.selected')
+    gl = highlight(regex, document.getElementsByTagName('body')[0])
+    console.log(gl)
+  } else {
+    // highlight next item, based on index
+    gl['index'] += 1
+    el_select(gl['index'], gl['arr'])
+  }
 
   sendResponse({
-    'results_index': 1,
-    'results_total': 100
+    'arr': gl,
+    'results_index': gl['index'],
+    'results_total': gl['total']
   })
 })
 
@@ -32,7 +43,9 @@ chrome.runtime.onMessage.addListener((req, sender, sendResponse) => {
  *    ``
  */
 let highlight = (regex, el=document.getElementsByTagName('body')[0]) => {
-  let omit = /(html|title|iframe|meta|link|script|style|svg|audio|canvas|figure|video|select|input|textarea)/i
+  let total = 0,
+      arr = [],
+      omit = /(html|title|iframe|meta|link|script|style|svg|audio|canvas|figure|video|select|input|textarea)/i
   /**
    * Return true if `el` is visible on browser, else false
    */
@@ -73,6 +86,8 @@ let highlight = (regex, el=document.getElementsByTagName('body')[0]) => {
         // replace the original matched text with the new mark node
         matchedTextNode.parentNode.replaceChild(mark, matchedTextNode)
 
+        arr.push(mark)
+        total += 1
         return 1
       }
     } else if(is_hidden(el)) {
@@ -83,6 +98,11 @@ let highlight = (regex, el=document.getElementsByTagName('body')[0]) => {
     return 0
   }
   recur(document.getElementsByTagName('body')[0])
+  return {
+    'total': total,
+    'arr': arr,
+    'index': 1
+  }
 }
 
 /**
@@ -98,34 +118,17 @@ let highlight_remove = (q) => {
 /**
  * Select regex matched element
  */
-let el_select = (index, get_next) => {
-  if(results.length === 0) return
-  results[index].className = 'highlighted'
-  results[index].style.backgroundColor = green
+let el_select = (index, highlighted_els) => {
+  // default them back
+  highlighted_els.forEach((el) => {
+    el.style.backgroundColor = 'red'
+    el.classList.remove('selected')
+  })
 
-  if(get_next) {
-    if(index === length - 1) {
-      index = 0;
-    } else {
-      index += 1;
-    }
-  } else {
-    if(index === 0) {
-      index = length - 1;
-    } else {
-      index -= 1;
-    }
-  }
-  results[index].className = 'selected'
-  results[index].style.backgroundColor = orange
-  parentNode = results[index].parentNode;
-  if(parentNode.nodeType === 1) {
-    parentNode.focus()
-  } else if(parentNode.parentNode.nodeType == 1) {
-    parentNode.parentNode.focus()
-  }
-  // returnSearchInfo('selectNode')
-  el_scroll_to(results[index])
+  highlighted_els[index].style.backgroundColor = 'green'
+  highlighted_els[index].classList.add('selected')
+
+  el_scroll_to(highlighted_els[index])
 }
 
 
@@ -133,9 +136,13 @@ let el_select = (index, get_next) => {
  * Scroll to `el`'s position on page
  */
 let el_scroll_to = (el) => {
-  el.scrollIntoView()
-  let top = el.documentOffsetTop() - (window.innerHeight / 2)
-  window.scrollTo(0, Math.max(top, window.pageYOffset - (window.innerHeight / 2)))
+  el.scrollIntoView({
+    behaviour: 'auto',
+    block: 'center',
+    inline: 'center'
+  })
+  // let top = el.documentOffsetTop() - (window.innerHeight / 2)
+  // window.scrollTo(0, Math.max(top, window.pageYOffset - (window.innerHeight / 2)))
 }
 
 /**
