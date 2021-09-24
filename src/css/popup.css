@@ -3,12 +3,12 @@ body {
   border-radius: 5px;
 }
 
-#regex_box {
+#regex_box_container {
   border: 2px solid #007BFF;
   width: 400px;
   position: relative;
 }
-  #inputRegex {
+  #regex_box {
     float: left;
     font-family: monospace;
     font-size: 1rem;
@@ -19,7 +19,7 @@ body {
     background-color: transparent;
   }
 
-  #numResults {
+  #results {
     color: #818182;
     font-family: monospace;
     font-size: 10pt;

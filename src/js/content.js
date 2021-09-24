@@ -15,22 +15,17 @@ chrome.runtime.onMessage.addListener((req, sender, sendResponse) => {
     // remove old highlights & highlight new matches again
     highlight_remove('mark.highlighted, mark.selected')
     gl = highlight(regex, document.getElementsByTagName('body')[0])
-    console.log(gl)
 
-  // if a new search is not required, then
+  // if a new search is NOT required, then
   } else {
-    if(req['next_prev']) {
-      // select next matched item, based on index
-      gl['index'] = el_select(gl['index'] += 1, gl['arr'])
-    } else {
-      gl['index'] = el_select(gl['index'] -= 1, gl['arr'])
-    }
+    // select next or previous matched item, based on `is_next` flag
+    gl['index'] = (req['is_next']) ? el_select(gl['index'] += 1, gl['arr']) : el_select(gl['index'] -= 1, gl['arr'])
   }
 
   sendResponse({
     'arr': gl,
-    'results_index': gl['index'],
-    'results_total': gl['total'] - 1      // since index starts from 0
+    'index': gl['index'],
+    'total': gl['total']
   })
 })
 
@@ -46,7 +41,7 @@ chrome.runtime.onMessage.addListener((req, sender, sendResponse) => {
  *    `index`: current highlighted result out of total
  *    `arr`:   an array of all matched elements
  */
-let highlight = (regex, el=document.getElementsByTagName('body')[0]) => {
+let highlight = (regex, el) => {
   let total = 0,
       arr = [],
       omit = /(html|title|iframe|meta|link|script|style|svg|audio|canvas|figure|video|select|input|textarea)/i
@@ -101,7 +96,8 @@ let highlight = (regex, el=document.getElementsByTagName('body')[0]) => {
     }
     return 0
   }
-  recur(document.getElementsByTagName('body')[0])
+  recur(el)
+
   return {
     'total': total,
     'arr': arr,

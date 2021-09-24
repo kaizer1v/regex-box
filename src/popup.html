@@ -8,31 +8,30 @@
   </head>
   <body>
     <div class="flexContainer">
-      <div id="regex_box">
-        <input id="inputRegex" type="text" name="inputRegex" autofocus placeholder='\w+' />
-        <span id="numResults">0 of 0</span>
+      <div id="regex_box_container">
+        <input id="regex_box" type="text" name="regex_box" autofocus placeholder='\w+' />
+        <span id="results">0 of 0</span>
       </div>
-      <a href="#" id="prev" type="button" title="Previous Match"><i class="fas fa-chevron-up"></i></a>
-      <a href="#" id="next" type="button" title="Next Match"><i class="fas fa-chevron-down"></i></a>
+      <a href="#" id="prev" type="button" title="Previous match"><i class="fas fa-chevron-up"></i></a>
+      <a href="#" id="next" type="button" title="Next match"><i class="fas fa-chevron-down"></i></a>
       <!-- <a href="#" id="insensitive" type="button" title="Case Sensitive" class="selected" data-on="true">Aa</a> -->
-      <a href="#" id="flags" type="button" title="Case Sensitive" data-on="true"><i class="far fa-flag"></i></a>
-      <a href="#" id="copy-to-clipboard" type="button" title="Copy matches to clipboard"><i class="far fa-copy"></i></a>
-      <a href="#" id="show-history" type="button" title="History"><i class="fas fa-history"></i></a>
+      <!-- <a href="#" id="flags" type="button" title="Search flags" data-on="true"><i class="far fa-flag"></i></a> -->
+      <a href="#" id="clipboard" type="button" title="Copy matched results to clipboard"><i class="far fa-copy"></i></a>
+      <!-- <a href="#" id="history" type="button" title="History"><i class="fas fa-history"></i></a> -->
       <a href="#" id="cheatsheet" type="button" title="Show cheat sheet"><i class="far fa-question-circle"></i></a>
     </div>
-    <ul id="history"></ul>
-    <div id="error" class="error-chrome-regex"></div>
 
-    <div id="cheatsheet_content">
+    <!-- Cheatsheet content -->
+    <!-- <div id="cheatsheet_content">
       <img src="cheat_sheet.png" alt="Cheat Sheet for RegEx" />
-    </div>
+    </div> -->
 
+    <!-- Flag options dropdown -->
     <div id="flag_options">
       <ul>
         <li><input type="checkbox" checked name="flags">Case Sensitive</li>
         <li><input type="checkbox" name="flags">Multiline</li>
         <li><input type="checkbox" checked name="flags">Global</li>
-        <li><input type="checkbox" name="flags">Something else</li>
       </ul>
     </div>
 
