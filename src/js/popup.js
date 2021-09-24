@@ -65,7 +65,7 @@ let send_message = (params) => {
     // send params to `content.js` & expect a response
     chrome.tabs.sendMessage(currTab[0].id, params, (resp) => {
       // populate number of results on input box
-      document.getElementById('results').textContent = `${resp['index'] + 1} of ${resp['total']}`
+      document.getElementById('results').textContent = `${resp['index']} of ${resp['total']}`
 
       // default input changed flag to false
       input_changed = false
