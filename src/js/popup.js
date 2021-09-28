@@ -15,8 +15,11 @@ onkeydown = (e) => {
       keys[13] = false
       send_message({
         'input': e.target.value,
-        'new_search': input_changed,
-        'is_next': true
+        'fn': 'search',
+        'params': {
+          'new_search': input_changed,
+          'is_next': true
+        }
       })
 
     // NOT changed text + pressed shift & enter
@@ -26,8 +29,11 @@ onkeydown = (e) => {
 
       send_message({
         'input': e.target.value,
-        'new_search': input_changed,
-        'is_next': false
+        'fn': 'search',
+        'params': {
+          'new_search': input_changed,
+          'is_next': false
+        }
       })
 
     // pressed any key other than shift or enter
@@ -137,8 +143,11 @@ let get_input = (id='regex_box') => {
 let sel_next_prev = (is_next) => {
   send_message({
     'input': get_input(),
-    'new_search': input_changed,
-    'is_next': is_next
+    'fn': 'search',
+    'params': {
+      'new_search': input_changed,
+      'is_next': is_next
+    }
   })
 }
 
@@ -152,6 +161,10 @@ let flags = () => {
 
 let clipboard = () => {
   console.log('clipboard')
+  send_message({
+    'input': get_input(),
+    'fn': 'clipboard'
+  })
 }
 
 let cheatsheet = () => {

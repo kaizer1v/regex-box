@@ -1,45 +1,38 @@
 let gl;   // declare a global variable `gl`
 
 chrome.runtime.onMessage.addListener((req, sender, sendResponse) => {
-  let regex
+  let regex,
+      fn_map = {
+        'search': fn_search,
+        'clipboard': fn_clipboard
+      }
 
   try {
-    regex = new RegExp(req.input);
+    regex = new RegExp(req.input)
   } catch(e) {
     console.error(e)
     return false
   }
 
-  // TODO ==> req['fn'](req['params'])
+  // append `regex obj` as parameter to appropriate function
+  req['params']['regex'] = regex
 
-  // if a new search is required, then
-  if(req['new_search']) {
-    // remove old highlights & highlight new matches again
-    highlight_remove('mark.highlighted, mark.selected')
-    gl = highlight(regex, document.getElementsByTagName('body')[0])
+  // call appropriate function based on mapping & interaction
+  let to_return = fn_map[req['fn']](req['params'] ? req['params'] : {})
 
-  // if a new search is NOT required, then
-  } else {
-    // select next or previous matched item, based on `is_next` flag
-    gl['index'] = (req['is_next']) ? el_select(gl['index'] += 1, gl['arr']) : el_select(gl['index'] -= 1, gl['arr'])
-  }
-
-  sendResponse({
-    'arr': gl,
-    'index': gl['index'],
-    'total': gl['total']
-  })
+  // send appropriate response based on called function
+  sendResponse(to_return)
 })
 
 
-let search = (params) => {
+let fn_search = (params) => {
   if(params['new_search']) {
     // remove old highlights & highlight new matches again
     highlight_remove('mark.highlighted, mark.selected')
-    gl = highlight(regex, document.getElementsByTagName('body')[0])
+    gl = highlight(params['regex'], document.getElementsByTagName('body')[0])
   } else {
     // select next or previous matched item, based on `is_next` flag
-    gl['index'] = (req['is_next']) ? el_select(gl['index'] += 1, gl['arr']) : el_select(gl['index'] -= 1, gl['arr'])
+    gl['index'] = (params['is_next']) ? el_select(gl['index'] += 1, gl['arr']) : el_select(gl['index'] -= 1, gl['arr'])
   }
 
   return {
@@ -47,6 +40,11 @@ let search = (params) => {
     'index': gl['index'],
     'total': gl['total']
   }
+}
+
+
+let fn_clipboard = () => {
+  console.log('copy to clipboard');
 }
 
 
