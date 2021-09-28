@@ -10,6 +10,8 @@ chrome.runtime.onMessage.addListener((req, sender, sendResponse) => {
     return false
   }
 
+  // TODO ==> req['fn'](req['params'])
+
   // if a new search is required, then
   if(req['new_search']) {
     // remove old highlights & highlight new matches again
@@ -28,6 +30,25 @@ chrome.runtime.onMessage.addListener((req, sender, sendResponse) => {
     'total': gl['total']
   })
 })
+
+
+let search = (params) => {
+  if(params['new_search']) {
+    // remove old highlights & highlight new matches again
+    highlight_remove('mark.highlighted, mark.selected')
+    gl = highlight(regex, document.getElementsByTagName('body')[0])
+  } else {
+    // select next or previous matched item, based on `is_next` flag
+    gl['index'] = (req['is_next']) ? el_select(gl['index'] += 1, gl['arr']) : el_select(gl['index'] -= 1, gl['arr'])
+  }
+
+  return {
+    'arr': gl,
+    'index': gl['index'],
+    'total': gl['total']
+  }
+}
+
 
 /**
  * Search and highlight regex pattern within a given `el`
@@ -105,6 +126,7 @@ let highlight = (regex, el) => {
   }
 }
 
+
 /**
  * Clear all highlighting from page for a given query selector
  */
@@ -114,6 +136,7 @@ let highlight_remove = (q) => {
     e.outerHTML = e.innerHTML
   })
 }
+
 
 /**
  * Select regex matched element
@@ -152,3 +175,5 @@ let el_scroll_to = (el) => {
     inline: 'center'
   })
 }
+
+

@@ -73,6 +73,7 @@ let send_message = (params) => {
   })
 }
 
+
 /**
  * Generic event handler capturer for buttons
  *
@@ -113,6 +114,7 @@ document.querySelectorAll('a').forEach((a_tag) => {
   a_tag.addEventListener('click', clickable)
 })
 
+
 /**
  * Get input value of regex box text box
  *
@@ -126,6 +128,12 @@ let get_input = (id='regex_box') => {
   return document.getElementById(id).value
 }
 
+/**
+ * Navigate to next or previous matched result. Sends message to content.js
+ *
+ * params
+ *    `is_next` <bool> - if `true`, go to next result, if `false`, go to prev result
+ */
 let sel_next_prev = (is_next) => {
   send_message({
     'input': get_input(),
