@@ -4,7 +4,7 @@
   "description": "A Regular Expression search box for chrome",
   "version": "1.0.0",
   "action": {
-    "default_popup": "popup.html",    // i.e. when the user clicks the popup icon, render `popup.html`
+    "default_popup": "popup.html",
     "default_icon": {
       "16": "icons/icons_16.png",
       "24": "icons/icons_24.png",
