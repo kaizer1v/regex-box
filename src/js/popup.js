@@ -70,8 +70,12 @@ let send_message = (params) => {
 
     // send params to `content.js` & expect a response
     chrome.tabs.sendMessage(currTab[0].id, params, (resp) => {
+
       // populate number of results on input box
-      document.getElementById('results').textContent = `${resp['index']} of ${resp['total']}`
+      if(params['fn'] === 'search') document.getElementById('results').textContent = `${resp['index']} of ${resp['total']}`
+
+      if((params['fn'] === 'clipboard') && resp === true) console.log('results copied to clipboard')
+      if((params['fn'] === 'clipboard') && resp === false) console.log('no results to copy')
 
       // default input changed flag to false
       input_changed = false
@@ -160,7 +164,6 @@ let flags = () => {
 }
 
 let clipboard = () => {
-  console.log('clipboard')
   send_message({
     'input': get_input(),
     'fn': 'clipboard'

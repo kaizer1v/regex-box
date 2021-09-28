@@ -14,11 +14,12 @@ chrome.runtime.onMessage.addListener((req, sender, sendResponse) => {
     return false
   }
 
-  // append `regex obj` as parameter to appropriate function
+  // update request parameters value if not present
+  req['params'] = (req['params']) ? req['params'] : {}
   req['params']['regex'] = regex
 
   // call appropriate function based on mapping & interaction
-  let to_return = fn_map[req['fn']](req['params'] ? req['params'] : {})
+  let to_return = fn_map[req['fn']](req['params'])
 
   // send appropriate response based on called function
   sendResponse(to_return)
@@ -43,8 +44,25 @@ let fn_search = (params) => {
 }
 
 
-let fn_clipboard = () => {
-  console.log('copy to clipboard');
+let fn_clipboard = (params) => {
+  // console.log(params, gl)
+  let results = []
+  gl['arr'].forEach((elem) => {
+    results.push(elem.innerText)
+  })
+
+  // if no results to copy, return false
+  if(results.length === 0) return false
+
+  // create a dummy textbox -> paste the results -> execute copy command -> return true
+  let dummy = document.createElement('textarea')
+  dummy.textContent = results.join('\n')
+  document.body.appendChild(dummy)
+  dummy.select()
+  document.execCommand('copy')
+  document.body.removeChild(dummy)
+
+  return true
 }
 
 
@@ -173,5 +191,3 @@ let el_scroll_to = (el) => {
     inline: 'center'
   })
 }
-
-
