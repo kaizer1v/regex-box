@@ -1,0 +1,22 @@
+{
+  "manifest_version": 3,
+  "name": "Search and Highlight",
+  "version": "1.0",
+  "description": "Search and highlight text on a webpage",
+  "permissions": ["activeTab"],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content.js"],
+      "all_frames": true,
+      // "css": ["content-page.css"] --> will run css
+    }
+  ],
+  "action": {
+    "default_icon": "icon.png",
+    "default_popup": "popup.html"
+  }
+}
